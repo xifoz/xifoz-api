@@ -6,22 +6,42 @@ export const contactSchema = z.object({
     .min(2, 'Name must be at least 2 characters')
     .max(100, 'Name must be under 100 characters')
     .trim(),
+
   email: z
     .string({ required_error: 'Email is required' })
     .email('Please enter a valid email address')
     .max(254, 'Email must be under 254 characters')
     .toLowerCase()
     .trim(),
+
+  phone: z
+    .string()
+    .max(20, 'Phone number must be under 20 characters')
+    .trim()
+    .optional(),
+
   company: z
     .string()
     .max(150, 'Company name must be under 150 characters')
     .trim()
     .optional(),
+
   service: z
     .string()
     .max(100, 'Service must be under 100 characters')
     .trim()
     .optional(),
+
+  subject: z
+    .string()
+    .max(200, 'Subject must be under 200 characters')
+    .trim()
+    .optional(),
+
+  ipAddress: z.string().optional(),
+
+  userAgent: z.string().optional(),
+
   message: z
     .string({ required_error: 'Message is required' })
     .min(10, 'Message must be at least 10 characters')

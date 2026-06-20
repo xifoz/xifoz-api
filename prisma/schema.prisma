@@ -8,17 +8,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ContactStatus {
+  NEW
+  IN_PROGRESS
+  CLOSED
+}
+
 model ContactSubmission {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  company   String?
-  service   String?
-  message   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String          @id @default(cuid())
+
+  name        String
+  email       String
+  phone       String?
+
+  company     String?
+  service     String?
+  subject     String?
+
+  message     String
+
+  ipAddress   String?
+  userAgent   String?
+
+  status      ContactStatus   @default(NEW)
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   @@index([email])
+  @@index([status])
   @@index([createdAt])
+
   @@map("contact_submissions")
 }

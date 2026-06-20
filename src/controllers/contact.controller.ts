@@ -13,26 +13,39 @@ export async function handleContactSubmission(
 
     if (!parsed.success) {
       const errors: Record<string, string[]> = {};
+
       for (const issue of parsed.error.issues) {
         const key = String(issue.path[0] ?? 'general');
         if (!errors[key]) errors[key] = [];
         errors[key]!.push(issue.message);
       }
+
       const response: ApiResponse = {
         success: false,
         message: 'Validation failed. Please correct the errors and try again.',
         errors,
       };
+
       res.status(422).json(response);
       return;
     }
 
-    await submitContactForm(parsed.data);
+    await submitContactForm({
+      ...parsed.data,
+      ipAddress:
+        (req.headers['x-forwarded-for'] as string)
+          ?.split(',')[0]
+          ?.trim() ||
+        req.socket.remoteAddress ||
+        undefined,
+      userAgent: req.get('user-agent') || undefined,
+    });
 
     const response: ApiResponse = {
       success: true,
       message: 'Thank you for reaching out. We will be in touch within 24 hours.',
     };
+
     res.status(201).json(response);
   } catch (err) {
     next(err);

@@ -6,9 +6,13 @@ export async function createContactSubmission(data: ContactInput) {
     data: {
       name: data.name,
       email: data.email,
+      phone: data.phone ?? null,
       company: data.company ?? null,
       service: data.service ?? null,
+      subject: data.subject ?? null,
       message: data.message,
+      ipAddress: data.ipAddress ?? null,
+      userAgent: data.userAgent ?? null,
     },
     select: {
       id: true,
@@ -19,13 +23,22 @@ export async function createContactSubmission(data: ContactInput) {
 
 export async function listContactSubmissions(page = 1, perPage = 20) {
   const skip = (page - 1) * perPage;
+
   const [items, total] = await Promise.all([
     prisma.contactSubmission.findMany({
       skip,
       take: perPage,
-      orderBy: { createdAt: 'desc' },
+      orderBy: {
+        createdAt: 'desc',
+      },
     }),
     prisma.contactSubmission.count(),
   ]);
-  return { items, total, page, perPage };
+
+  return {
+    items,
+    total,
+    page,
+    perPage,
+  };
 }
