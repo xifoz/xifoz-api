@@ -33,6 +33,7 @@ export async function handleContactSubmission(
     await submitContactForm({
       ...parsed.data,
       ipAddress:
+        (req.headers['cf-connecting-ip'] as string) ||
         (req.headers['x-forwarded-for'] as string)
           ?.split(',')[0]
           ?.trim() ||
