@@ -14,30 +14,95 @@ enum ContactStatus {
   CLOSED
 }
 
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
 model ContactSubmission {
-  id          String          @id @default(cuid())
+  id String @id @default(cuid())
 
-  name        String
-  email       String
-  phone       String?
+  name String
+  email String
+  phone String?
 
-  company     String?
-  service     String?
-  subject     String?
+  company String?
+  service String?
+  subject String?
 
-  message     String
+  message String
 
-  ipAddress   String?
-  userAgent   String?
+  ipAddress String?
+  userAgent String?
 
-  status      ContactStatus   @default(NEW)
+  status ContactStatus @default(NEW)
 
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([email])
   @@index([status])
   @@index([createdAt])
 
   @@map("contact_submissions")
+}
+
+model AdminUser {
+  id String @id @default(cuid())
+
+  email String @unique
+  passwordHash String
+  fullName String
+
+  role AdminRole @default(ADMIN)
+
+  isActive Boolean @default(true)
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+  auditLogs AuditLog[]
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id String @id @default(cuid())
+
+  tokenHash String @unique
+
+  expiresAt DateTime
+
+  revoked Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  adminId String
+  admin AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+
+  action String
+
+  entity String?
+  entityId String?
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  adminId String
+  admin AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([createdAt])
 }
