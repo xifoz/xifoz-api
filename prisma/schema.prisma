@@ -22,7 +22,7 @@ enum AdminRole {
 model ContactSubmission {
   id String @id @default(cuid())
 
-  name String
+  name  String
   email String
   phone String?
 
@@ -43,16 +43,15 @@ model ContactSubmission {
   @@index([email])
   @@index([status])
   @@index([createdAt])
-
   @@map("contact_submissions")
 }
 
 model AdminUser {
   id String @id @default(cuid())
 
-  email String @unique
+  email        String @unique
   passwordHash String
-  fullName String
+  fullName     String
 
   role AdminRole @default(ADMIN)
 
@@ -64,7 +63,7 @@ model AdminUser {
   updatedAt DateTime @updatedAt
 
   refreshTokens RefreshToken[]
-  auditLogs AuditLog[]
+  auditLogs     AuditLog[]
 
   @@index([email])
 }
@@ -81,7 +80,7 @@ model RefreshToken {
   createdAt DateTime @default(now())
 
   adminId String
-  admin AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  admin   AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
 
   @@index([adminId])
   @@index([expiresAt])
@@ -92,7 +91,7 @@ model AuditLog {
 
   action String
 
-  entity String?
+  entity   String?
   entityId String?
 
   ipAddress String?
@@ -101,7 +100,7 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   adminId String
-  admin AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  admin   AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
 
   @@index([adminId])
   @@index([createdAt])
