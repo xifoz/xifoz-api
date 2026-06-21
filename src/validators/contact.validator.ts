@@ -1,52 +1,26 @@
 import { z } from 'zod';
+import { ContactStatus } from '@prisma/client';
 
-export const contactSchema = z.object({
-  name: z
-    .string({ required_error: 'Name is required' })
-    .min(2, 'Name must be at least 2 characters')
-    .max(100, 'Name must be under 100 characters')
-    .trim(),
+export const listContactsSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
 
-  email: z
-    .string({ required_error: 'Email is required' })
-    .email('Please enter a valid email address')
-    .max(254, 'Email must be under 254 characters')
-    .toLowerCase()
-    .trim(),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
 
-  phone: z
-    .string()
-    .max(20, 'Phone number must be under 20 characters')
-    .trim()
-    .optional(),
+  search: z.string().trim().optional(),
 
-  company: z
-    .string()
-    .max(150, 'Company name must be under 150 characters')
-    .trim()
-    .optional(),
-
-  service: z
-    .string()
-    .max(100, 'Service must be under 100 characters')
-    .trim()
-    .optional(),
-
-  subject: z
-    .string()
-    .max(200, 'Subject must be under 200 characters')
-    .trim()
-    .optional(),
-
-  ipAddress: z.string().optional(),
-
-  userAgent: z.string().optional(),
-
-  message: z
-    .string({ required_error: 'Message is required' })
-    .min(10, 'Message must be at least 10 characters')
-    .max(2000, 'Message must be under 2000 characters')
-    .trim(),
+  status: z.nativeEnum(ContactStatus).optional(),
 });
 
-export type ContactInput = z.infer<typeof contactSchema>;
+export const contactIdSchema = z.object({
+  id: z.string().cuid(),
+});
+
+export const updateStatusSchema = z.object({
+  status: z.nativeEnum(ContactStatus),
+});
+
+export type ListContactsInput =
+  z.infer<typeof listContactsSchema>;
+
+export type UpdateStatusInput =
+  z.infer<typeof updateStatusSchema>;

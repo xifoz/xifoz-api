@@ -17,6 +17,8 @@ import {
 } from './middleware/errorHandler';
 
 import contactRoutes from './routes/contact.routes';
+import adminAuthRoutes from './routes/admin/auth.routes';
+import dashboardRoutes from './routes/admin/dashboard.routes';
 
 import { logger } from './utils/logger';
 
@@ -55,6 +57,8 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/contact', contactRoutes);
+app.use('/api/admin', adminAuthRoutes);
+app.use('/api/admin/dashboard', dashboardRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

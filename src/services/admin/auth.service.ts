@@ -1,5 +1,7 @@
 import { AdminRole } from '@prisma/client';
 
+import { env } from '../../config/env';
+
 import { adminRepository } from '../../repositories/admin.repository';
 import { auditRepository } from '../../repositories/audit.repository';
 
@@ -9,16 +11,10 @@ import {
   needsRehash,
 } from '../../security/password';
 
-import {
-  signAccessToken,
-} from '../../security/jwt';
-
-import { env } from '../../config/env';
+import { sessionService } from './session.service';
 
 export class AuthService {
-
   async bootstrapSuperAdmin() {
-
     const existing = await adminRepository.findByEmail(
       env.ADMIN_EMAIL,
     );
@@ -39,39 +35,38 @@ export class AuthService {
     });
   }
 
-  async login(
-    email: string,
-    password: string,
-    ip?: string,
-    userAgent?: string,
-  ) {
-
-    const admin =
-      await adminRepository.findByEmail(email);
+  async login(data: {
+    email: string;
+    password: string;
+    ipAddress?: string;
+    userAgent?: string;
+  }) {
+    const admin = await adminRepository.findByEmail(
+      data.email,
+    );
 
     if (!admin) {
       return null;
     }
 
-    const valid =
-      await verifyPassword(
-        password,
-        admin.passwordHash,
-      );
+    const valid = await verifyPassword(
+      data.password,
+      admin.passwordHash,
+    );
 
     if (!valid) {
       return null;
     }
 
-    if (
-      await needsRehash(admin.passwordHash)
-    ) {
+    if (await needsRehash(admin.passwordHash)) {
+      const newHash = await hashPassword(
+        data.password,
+      );
 
-      const newHash =
-        await hashPassword(password);
-
-      // update later
-      admin.passwordHash = newHash;
+      await adminRepository.updatePasswordHash(
+        admin.id,
+        newHash,
+      );
     }
 
     await adminRepository.updateLastLogin(
@@ -81,23 +76,19 @@ export class AuthService {
     await auditRepository.log({
       adminId: admin.id,
       action: 'LOGIN_SUCCESS',
-      ipAddress: ip,
-      userAgent,
+      ipAddress: data.ipAddress,
+      userAgent: data.userAgent,
     });
 
-    const accessToken =
-      signAccessToken({
-        sub: admin.id,
-        email: admin.email,
-        role: admin.role,
-      });
+    const session =
+      await sessionService.create(admin);
 
     return {
       admin,
-      accessToken,
+      ...session,
     };
   }
-
 }
+
 export const authService =
   new AuthService();
